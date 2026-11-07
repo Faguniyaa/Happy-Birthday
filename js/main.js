@@ -1,0 +1,4 @@
+document.querySelector('.menu-toggle')?.addEventListener('click',()=>document.querySelector('.nav-links')?.classList.toggle('show'));
+document.querySelectorAll('.reason').forEach(card=>card.addEventListener('click',()=>card.classList.toggle('open')));
+document.getElementById('gift')?.addEventListener('click',()=>{document.getElementById('reveal')?.classList.add('show');document.getElementById('gift').style.display='none';});
+const petals=document.getElementById('petals');if(petals){setInterval(()=>{const p=document.createElement('span');p.className='petal';p.textContent=['♡','✿','♥'][Math.floor(Math.random()*3)];p.style.left=Math.random()*100+'%';p.style.fontSize=(10+Math.random()*14)+'px';p.style.animationDuration=(7+Math.random()*7)+'s';petals.appendChild(p);setTimeout(()=>p.remove(),15000)},900);}
