@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff1f3">
+<title>Add Aanchal's Photos ♡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+:root{--rose:#c65f78;--deep:#74394d;--ink:#49333b;--muted:#927b82;--paper:#fffaf8;--line:#f1dce0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 5%,#ffe3e9,transparent 35%),#fffaf8;color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+main{width:min(850px,92%);margin:45px auto 70px}.eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:10px;font-weight:700;color:var(--rose)}
+h1{font:500 clamp(38px,7vw,60px)/1.1 'Playfair Display',serif;color:var(--deep);margin:12px 0}h1 em{color:var(--rose)}.intro{color:var(--muted);line-height:1.8;max-width:620px}
+.card{background:#fff;border:1px solid var(--line);padding:clamp(20px,4vw,32px);margin:24px 0;box-shadow:0 15px 40px #74394d0b}
+label{display:block;font-weight:700;font-size:13px;color:var(--deep);margin:0 0 10px}
+input[type=file]{width:100%;padding:15px;border:1px dashed #d9a8b4;background:#fff8f9;border-radius:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.help{font-size:12px;color:var(--muted);line-height:1.7;margin:9px 0 0}
+button,.back{border:0;border-radius:30px;padding:14px 20px;background:var(--rose);color:white;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;margin:8px 8px 0 0}
+button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#f7e8ec;color:var(--deep)}
+.preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:12px;margin-top:18px}.thumb{position:relative;background:#fff8f9;border:1px solid var(--line);padding:7px;border-radius:8px}.thumb img{width:100%;height:135px;object-fit:cover;border-radius:5px;display:block}.thumb span{display:block;font-size:10px;color:var(--muted);padding:7px 2px 2px;overflow-wrap:anywhere}
+.status{font-size:13px;color:var(--deep);margin-top:15px;line-height:1.7}.note{background:#fff4e9;border-left:3px solid #d7a06c;padding:13px 15px;font-size:12px;line-height:1.7;color:#765b4a}
+@media(max-width:600px){.row{grid-template-columns:1fr}main{margin-top:28px}.preview{grid-template-columns:repeat(3,1fr)}.thumb img{height:105px}}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">A little photo studio · just for Aanchal</p>
+  <h1>Add your <em>memories.</em></h1>
+  <p class="intro">Choose the original birthday website ZIP, select your favourite photos, preview them, then download a new ZIP with the photos placed in the gallery. Nothing is uploaded to a server — everything happens in this browser.</p>
+
+  <section class="card">
+    <label for="project">1. Select the original website ZIP</label>
+    <input id="project" type="file" accept=".zip,application/zip">
+    <p class="help">Choose <b>Aanchal_Birthday_Website.zip</b> that you downloaded earlier.</p>
+  </section>
+
+  <section class="card">
+    <label for="photos">2. Select photos from your phone or computer</label>
+    <input id="photos" type="file" accept="image/*" multiple>
+    <p class="help">First photo becomes the homepage cover. The first six photos also fill the gallery. Add up to 40 photos; extra photos are added to the gallery automatically.</p>
+    <div id="preview" class="preview"></div>
+  </section>
+
+  <section class="card">
+    <label>3. Create your personalised website ZIP</label>
+    <div class="note">Keep the original ZIP selected. The new ZIP will contain your photos and the website files. Your original ZIP will not be changed.</div>
+    <button id="build" disabled>Build my birthday website ZIP ♡</button>
+    <button class="secondary" id="clear" type="button">Clear selected photos</button>
+    <div id="status" class="status" aria-live="polite"></div>
+  </section>
+  <a class="back" href="index.html">← Back to birthday website</a>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+const projectInput=document.getElementById('project');
+const photoInput=document.getElementById('photos');
+const preview=document.getElementById('preview');
+const statusBox=document.getElementById('status');
+const buildBtn=document.getElementById('build');
+let selectedPhotos=[];
+function updateButton(){buildBtn.disabled=!(projectInput.files.length && selectedPhotos.length);}
+projectInput.addEventListener('change',updateButton);
+photoInput.addEventListener('change',()=>{
+  selectedPhotos=Array.from(photoInput.files).filter(f=>f.type.startsWith('image/')).slice(0,40);
+  preview.innerHTML='';
+  selectedPhotos.forEach((file,i)=>{
+    const card=document.createElement('div');card.className='thumb';
+    const img=document.createElement('img');img.alt='Selected memory '+(i+1);img.src=URL.createObjectURL(file);
+    const label=document.createElement('span');label.textContent=(i===0?'Cover + ':'')+'Photo '+(i+1)+' · '+file.name;
+    card.append(img,label);preview.append(card);
+  });
+  statusBox.textContent=selectedPhotos.length+' photo(s) selected.';
+  updateButton();
+});
+document.getElementById('clear').addEventListener('click',()=>{
+  selectedPhotos=[];photoInput.value='';preview.innerHTML='';statusBox.textContent='Photo selection cleared.';updateButton();
+});
+buildBtn.addEventListener('click',async()=>{
+  if(!window.JSZip){statusBox.textContent='ZIP library could not load. Connect to the internet and refresh this page.';return;}
+  buildBtn.disabled=true;statusBox.textContent='Preparing your personalised website…';
+  try{
+    const zip=await JSZip.loadAsync(projectInput.files[0]);
+    // Identify the project root inside the ZIP (works with either a flat ZIP or one parent folder).
+    let root='';
+    const indexEntry=Object.keys(zip.files).find(n=>!zip.files[n].dir && /(^|\/)index\.html$/i.test(n));
+    if(!indexEntry)throw new Error('Could not find index.html in the selected ZIP. Please choose the original birthday website ZIP.');
+    root=indexEntry.slice(0,indexEntry.lastIndexOf('/')+1);
+    const imageExt=file=>{const ext=(file.name.split('.').pop()||'jpg').toLowerCase();return ['jpg','jpeg','png','webp','gif'].includes(ext)?ext:'jpg';};
+    const names=[];
+    for(let i=0;i<selectedPhotos.length;i++){
+      const file=selectedPhotos[i],ext=imageExt(file);
+      const filename=i===0?'cover.'+ext:'photo'+i+'.'+ext;
+      zip.file(root+'assets/images/'+filename,file);
+      names.push({filename,caption:'A little memory with you'});
+    }
+    // Update homepage cover path.
+    const indexPath=root+'index.html';
+    let indexHtml=await zip.file(indexPath).async('string');
+    indexHtml=indexHtml.replace(/assets\/images\/cover\.(?:jpg|jpeg|png|webp|gif)/i,'assets/images/'+names[0].filename);
+    zip.file(indexPath,indexHtml);
+    // Replace gallery blocks with all chosen photos.
+    const galleryPath=root+'gallery.html';
+    if(zip.file(galleryPath)){
+      let html=await zip.file(galleryPath).async('string');
+      const figures=names.map((item,i)=>`<figure><img src="assets/images/${item.filename}" alt="Memory ${i+1}"><figcaption>${i===0?'A favourite moment':'A little memory with you'}</figcaption></figure>`).join('\\n');
+      const start=html.indexOf('<div class="gallery" id="gallery">');
+      const end=html.indexOf('</div>',start);
+      if(start>=0&&end>=0)html=html.slice(0,start)+'<div class="gallery" id="gallery">\\n'+figures+'\\n'+html.slice(end);
+      zip.file(galleryPath,html);
+    }
+    // Include this uploader in the generated site too.
+    const uploader=await fetch(location.href).then(r=>r.text()).catch(()=>null);
+    if(uploader)zip.file(root+'upload.html',uploader);
+    statusBox.textContent='Packing the ZIP…';
+    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='Aanchal_Personalised_Birthday_Website.zip';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    statusBox.textContent='Done! Your personalised website ZIP has been downloaded. Unzip it and publish the folder to GitHub Pages.';
+  }catch(err){statusBox.textContent='Could not build ZIP: '+err.message;}
+  finally{updateButton();}
+});
+</script>
+</body>
+</html>
